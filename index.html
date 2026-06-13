@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Programs Hub</title>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            
+            /* App specific accent colors */
+            --quantum-color: #6366f1;
+            --frog-color: #10b981;
+            --forge-color: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* Subtle background decoration */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            top: 10%;
+            left: 15%;
+            z-index: -1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #ffffff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hover States with Custom Colors */
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+        }
+
+        .card.quantum:hover { box-shadow: 0 10px 30px -15px rgba(99, 102, 241, 0.3); border-color: var(--quantum-color); }
+        .card.frog:hover { box-shadow: 0 10px 30px -15px rgba(16, 185, 129, 0.3); border-color: var(--frog-color); }
+        .card.forge:hover { box-shadow: 0 10px 30px -15px rgba(245, 158, 11, 0.3); border-color: var(--forge-color); }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .quantum .card-icon { color: var(--quantum-color); background: rgba(99, 102, 241, 0.1); }
+        .frog .card-icon { color: var(--frog-color); background: rgba(16, 185, 129, 0.1); }
+        .forge .card-icon { color: var(--forge-color); background: rgba(245, 158, 11, 0.1); }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .go-corner {
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: auto;
+        }
+
+        .quantum .go-corner { color: var(--quantum-color); }
+        .frog .go-corner { color: var(--frog-color); }
+        .forge .go-corner { color: var(--forge-color); }
+
+        .go-corner span {
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover .go-corner span {
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Art Suite Dashboard</h1>
+        <p>Select a tool to begin creating</p>
+    </header>
+
+    <main class="grid">
+        <a href="quantumpro.html" class="card quantum">
+            <div>
+                <div class="card-icon">⚛</div>
+                <h2>QuantumPro</h2>
+                <p>Explore generative digital art structures and advanced algorithmic rendering pipelines.</p>
+            </div>
+            <div class="go-corner">Launch App <span>→</span></div>
+        </a>
+
+        <a href="pbrfrog.html" class="card frog">
+            <div>
+                <div class="card-icon">🐸</div>
+                <h2>PBRFrog</h2>
+                <p>Physically Based Rendering suite for realistic material behavior, textures, and shading layouts.</p>
+            </div>
+            <div class="go-corner">Launch App <span>→</span></div>
+        </a>
+
+        <a href="materialforge.html" class="card forge">
+            <div>
+                <div class="card-icon">⚒</div>
+                <h2>MaterialForge</h2>
+                <p>Anvil your creative concepts into reality with node-based texture synthesis and authoring tools.</p>
+            </div>
+            <div class="go-corner">Launch App <span>→</span></div>
+        </a>
+    </main>
+
+</body>
+</html>
