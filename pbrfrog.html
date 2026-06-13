@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Customizable Tree Frog PBR Generator (4K)</title>
+	<style>
+		body {
+			background-color: #121212;
+			color: #e0e0e0;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			margin: 0;
+			padding: 20px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		h1 { color: #59C83D; margin-bottom: 5px; }
+		p { color: #aaa; margin-top: 0; margin-bottom: 20px; text-align: center; }
+		
+		.container {
+			display: flex;
+			gap: 30px;
+			max-width: 1200px;
+			width: 100%;
+			justify-content: center;
+			align-items: flex-start;
+		}
+
+		.config-panel {
+			background: #1a1a1a;
+			padding: 20px;
+			border-radius: 8px;
+			border: 1px solid #333;
+			width: 320px;
+			box-sizing: border-box;
+		}
+
+		.config-group {
+			margin-bottom: 18px;
+		}
+
+		label {
+			display: block;
+			font-size: 13px;
+			font-weight: bold;
+			margin-bottom: 6px;
+			color: #ccc;
+		}
+
+		.color-pickers {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		.color-item {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			background: #252525;
+			padding: 6px;
+			border-radius: 4px;
+		}
+
+		input[type="color"] {
+			border: none;
+			width: 30px;
+			height: 30px;
+			border-radius: 4px;
+			cursor: pointer;
+			background: none;
+		}
+
+		.seed-input-group {
+			display: flex;
+			gap: 8px;
+		}
+
+		input[type="text"], input[type="range"] {
+			width: 100%;
+			background: #252525;
+			border: 1px solid #444;
+			color: #fff;
+			padding: 8px;
+			border-radius: 4px;
+			box-sizing: border-box;
+		}
+
+		.action-btns {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			margin-top: 20px;
+		}
+
+		button {
+			background-color: #2F7D2C;
+			color: white;
+			border: none;
+			padding: 12px;
+			font-size: 14px;
+			font-weight: bold;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background 0.2s, transform 0.1s;
+		}
+		button:hover { background-color: #59C83D; }
+		button:active { transform: scale(0.98); }
+		button.active { background-color: #B7E34A; color: #1E4D1B; }
+		button:disabled { background-color: #444; color: #777; cursor: not-allowed; }
+
+		.preview-area {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.map-switcher {
+			display: flex;
+			gap: 5px;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+		}
+
+		.map-switcher button {
+			padding: 8px 14px;
+			font-size: 12px;
+		}
+
+		.preview-container {
+			position: relative;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+			border-radius: 8px;
+			overflow: hidden;
+			background: #000;
+		}
+
+		canvas {
+			display: block;
+			width: 550px;
+			height: 550px;
+			background-color: #222;
+		}
+
+		#status {
+			font-weight: bold;
+			color: #F59A23;
+			margin-top: 15px;
+			min-height: 20px;
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+
+	<h1>Customizable PBR Frog Skin Generator</h1>
+	<p>Procedural 4K Game-Ready Seamless Texture Maps with Custom Seeding and Color Palettes</p>
+
+	<div class="container">
+		<div class="config-panel">
+			<div class="config-group">
+				<label>1. Seed Engine</label>
+				<div class="seed-input-group">
+					<input type="text" id="seedInput" value="Rainforest_2026">
+					<button type="button" onclick="randomizeSeed()" style="padding: 8px 12px;">🎲</button>
+				</div>
+			</div>
+
+			<div class="config-group">
+				<label>2. Base Color Palette</label>
+				<div class="color-pickers">
+					<div class="color-item"><input type="color" id="col1" value="#59C83D"><span style="font-size:11px">Base Green</span></div>
+					<div class="color-item"><input type="color" id="col2" value="#2F7D2C"><span style="font-size:11px">Forest Grn</span></div>
+					<div class="color-item"><input type="color" id="col3" value="#B7E34A"><span style="font-size:11px">Lime Grn</span></div>
+					<div class="color-item"><input type="color" id="col4" value="#E9F2B5"><span style="font-size:11px">Pale Cream</span></div>
+					<div class="color-item"><input type="color" id="col5" value="#F59A23"><span style="font-size:11px">Spot Accent</span></div>
+					<div class="color-item"><input type="color" id="col6" value="#1E4D1B"><span style="font-size:11px">Dark Shadow</span></div>
+				</div>
+			</div>
+
+			<div class="config-group">
+				<label id="scaleLabel">3. Micro-Pore Density: 1.0x</label>
+				<input type="range" id="poreScale" min="0.5" max="2.5" step="0.1" value="1.0" oninput="updateScaleLabel(this.value)">
+			</div>
+
+			<div class="action-btns">
+				<button id="btn-generate" onclick="generateAllMaps()">Bake 4K Maps</button>
+				<button id="btn-download" onclick="downloadCurrentMap()" style="background-color:#F59A23;" disabled>Download Selected Map</button>
+			</div>
+		</div>
+
+		<div class="preview-area">
+			<div class="map-switcher">
+				<button id="map-albedo" class="map-view-btn" onclick="switchView('albedo')" disabled>Albedo</button>
+				<button id="map-roughness" class="map-view-btn" onclick="switchView('roughness')" disabled>Roughness</button>
+				<button id="map-normal" class="map-view-btn" onclick="switchView('normal')" disabled>Normal</button>
+				<button id="map-height" class="map-view-btn" onclick="switchView('height')" disabled>Height</button>
+				<button id="map-ao" class="map-view-btn" onclick="switchView('ao')" disabled>AO</button>
+				<button id="map-metallic" class="map-view-btn" onclick="switchView('metallic')" disabled>Metallic</button>
+			</div>
+
+			<div class="preview-container">
+				<canvas id="textureCanvas" width="4096" height="4096"></canvas>
+			</div>
+			
+			<div id="status">Adjust parameters and click "Bake 4K Maps"</div>
+		</div>
+	</div>
+
+<script>
+	// --- Seedable LCG Pseudo-Random Number Generator ---
+	function createMathRandomFromSeed(seedString) {
+		let h = 1779033703 ^ seedString.length;
+		for (let i = 0; i < seedString.length; i++) {
+			h = Math.imul(h ^ seedString.charCodeAt(i), 3432918353);
+			h = (h << 13) | (h >>> 19);
+		}
+		return function() {
+			h = Math.imul(h ^ (h >>> 16), 2246822507);
+			h = Math.imul(h ^ (h >>> 13), 3266489909);
+			return ((h ^= h >>> 16) >>> 0) / 4294967296;
+		};
+	}
+
+	// --- Seamless Simplex Noise Object Factory ---
+	const SeedableSimplexNoise = function(seedFunc) {
+		const p = new Uint8Array(256);
+		for (let i = 0; i < 256; i++) p[i] = Math.floor(seedFunc() * 256);
+		const perm = new Uint8Array(512);
+		for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+		
+		return {
+			tileableNoise2D: function(x, y, w, h) {
+				const s = x / w * Math.PI * 2;
+				const t = y / h * Math.PI * 2;
+				const nx = Math.cos(s) / (Math.PI * 2) * w;
+				const ny = Math.sin(s) / (Math.PI * 2) * w;
+				const nz = Math.cos(t) / (Math.PI * 2) * h;
+				const nw = Math.sin(t) / (Math.PI * 2) * h;
+				return this.noise4D(nx, ny, nz, nw);
+			},
+			noise4D: function(x, y, z, w) {
+				let n0, n4;
+				const F4 = (Math.sqrt(5.0) - 1.0) / 4.0;
+				const G4 = (5.0 - Math.sqrt(5.0)) / 20.0;
+				const s = (x + y + z + w) * F4;
+				const i = Math.floor(x + s); const j = Math.floor(y + s);
+				const k = Math.floor(z + s); const l = Math.floor(w + s);
+				const t = (i + j + k + l) * G4;
+				const X0 = i - t; const Y0 = j - t; const Z0 = k - t; const W0 = l - t;
+				const x0 = x - X0; const y0 = y - Y0; const z0 = z - Z0; const w0 = w - W0;
+				let c = (x0 > y0 ? 32 : 0) + (x0 > z0 ? 16 : 0) + (y0 > z0 ? 16 : 0) + (x0 > w0 ? 8 : 0) + (y0 > w0 ? 8 : 0) + (z0 > w0 ? 8 : 0);
+				let i1 = c >= 56 ? 1 : 0; let j1 = (c >= 48 && c < 56) || (c >= 32 && c < 40) || (c == 24) ? 1 : 0;
+				let k1 = (c >= 40 && c < 48) || (c >= 20 && c < 32) || (c == 12) ? 1 : 0; let l1 = c < 12 && c >= 4 ? 1 : 0;
+				
+				const x4 = x0 - 1.0 + 4.0 * G4; const y4 = y0 - 1.0 + 4.0 * G4; const z4 = z0 - 1.0 + 4.0 * G4; const w4 = w0 - 1.0 + 4.0 * G4;
+				const ii = i & 255; const jj = j & 255; const kk = k & 255; const ll = l & 255;
+				
+				let t0 = 0.6 - x0*x0 - y0*y0 - z0*z0 - w0*w0;
+				if(t0<0) n0 = 0.0; else { t0 *= t0; n0 = t0 * t0 * this.grad4(perm[ii+perm[jj+perm[kk+perm[ll]]]], x0, y0, z0, w0); }
+				let t4 = 0.6 - x4*x4 - y4*y4 - z4*z4 - w4*w4;
+				if(t4<0) n4 = 0.0; else { t4 *= t4; n4 = t4 * t4 * this.grad4(perm[ii+1+perm[jj+1+perm[kk+1+perm[ll+1]]]], x4, y4, z4, w4); }
+				return 27.0 * (n0 + n4); 
+			},
+			grad4: function(hash, x, y, z, w) {
+				const h = hash & 31;
+				const u = h < 24 ? x : y; const v = h < 16 ? y : z; const s = h < 8 ? z : w;
+				return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v) + ((h & 4) === 0 ? s : -s);
+			}
+		};
+	};
+
+	// Helper: Hex color string to numeric RGB Array transformation
+	function hexToRgb(hex) {
+		const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		return result ? [ parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16) ] : [0,0,0];
+	}
+
+	function randomizeSeed() {
+		const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		let result = "";
+		for (let i = 0; i < 10; i++) {
+			result += chars.charAt(Math.floor(Math.random() * chars.length));
+		}
+		document.getElementById("seedInput").value = result;
+	}
+
+	function updateScaleLabel(val) {
+		document.getElementById("scaleLabel").innerText = `3. Micro-Pore Density: ${val}x`;
+	}
+
+	// Pipeline Data Memory Cache Blocks
+	let currentView = 'albedo';
+	let maps = { albedo: null, roughness: null, normal: null, height: null, ao: null, metallic: null };
+	const canvas = document.getElementById('textureCanvas');
+	const ctx = canvas.getContext('2d');
+	const size = 4096;
+
+	function updateStatus(text) {
+		document.getElementById('status').innerText = text;
+	}
+
+	function generateAllMaps() {
+		document.getElementById('btn-generate').disabled = true;
+		updateStatus("Seeding procedural pipelines...");
+
+		setTimeout(() => {
+			// Read active UI options
+			const seedStr = document.getElementById("seedInput").value;
+			const seedFunc = createMathRandomFromSeed(seedStr);
+			const fn = SeedableSimplexNoise(seedFunc);
+
+			const pDensity = parseFloat(document.getElementById("poreScale").value);
+
+			const palette = {
+				baseGreen:   hexToRgb(document.getElementById("col1").value),
+				forestGreen: hexToRgb(document.getElementById("col2").value),
+				limeGreen:   hexToRgb(document.getElementById("col3").value),
+				paleYellow:  hexToRgb(document.getElementById("col4").value),
+				brightOrange:hexToRgb(document.getElementById("col5").value),
+				darkGreen:   hexToRgb(document.getElementById("col6").value)
+			};
+
+			const heightBuffer = new Float32Array(size * size);
+			const aoBuffer = new Uint8Array(size * size);
+			
+			updateStatus("Baking Heightmaps and Pores...");
+			
+			for (let y = 0; y < size; y++) {
+				for (let x = 0; x < size; x++) {
+					const idx = y * size + x;
+					
+					// Layered Multi-Octave Map configurations
+					const nPrimary = (fn.tileableNoise2D(x * 0.012, y * 0.012, size, size) + 1) * 0.5;
+					const nSecondary = (fn.tileableNoise2D(x * 0.05, y * 0.05, size, size) + 1) * 0.5;
+					const nMicroPores = (fn.tileableNoise2D(x * 0.28 * pDensity, y * 0.28 * pDensity, size, size) + 1) * 0.5;
+					
+					let h = (nPrimary * 0.55) + (nSecondary * 0.3) - (nMicroPores * 0.15);
+					h = Math.max(0, Math.min(1, h));
+					heightBuffer[idx] = h;
+					
+					let aoVal = Math.floor(h * 190 + 65);
+					aoBuffer[idx] = Math.max(25, Math.min(255, aoVal));
+				}
+			}
+
+			// Instantiating fresh image elements 
+			maps.albedo = ctx.createImageData(size, size);
+			maps.roughness = ctx.createImageData(size, size);
+			maps.normal = ctx.createImageData(size, size);
+			maps.height = ctx.createImageData(size, size);
+			maps.ao = ctx.createImageData(size, size);
+			maps.metallic = ctx.createImageData(size, size);
+
+			updateStatus("Baking Albedo channels & PBR attributes...");
+
+			for (let y = 0; y < size; y++) {
+				for (let x = 0; x < size; x++) {
+					const idx = y * size + x;
+					const pixelIdx = idx * 4;
+					const h = heightBuffer[idx];
+					const ao = aoBuffer[idx];
+
+					// Macro structural blending logic
+					const nMacroColor = (fn.tileableNoise2D(x * 0.003, y * 0.003, size, size) + 1) * 0.5;
+					const nAccentColor = (fn.tileableNoise2D(x * 0.008, y * 0.015, size, size) + 1) * 0.5;
+					
+					let r, g, b;
+					if (nMacroColor < 0.4) {
+						const t = nMacroColor / 0.4;
+						r = lerp(palette.darkGreen[0], palette.baseGreen[0], t);
+						g = lerp(palette.darkGreen[1], palette.baseGreen[1], t);
+						b = lerp(palette.darkGreen[2], palette.baseGreen[2], t);
+					} else if (nMacroColor < 0.78) {
+						const t = (nMacroColor - 0.4) / 0.38;
+						r = lerp(palette.baseGreen[0], palette.limeGreen[0], t);
+						g = lerp(palette.baseGreen[1], palette.limeGreen[1], t);
+						b = lerp(palette.baseGreen[2], palette.limeGreen[2], t);
+					} else {
+						const t = (nMacroColor - 0.78) / 0.22;
+						r = lerp(palette.limeGreen[0], palette.paleYellow[0], t);
+						g = lerp(palette.limeGreen[1], palette.paleYellow[1], t);
+						b = lerp(palette.limeGreen[2], palette.paleYellow[2], t);
+					}
+
+					// Spot generation condition mapping checks
+					if (nAccentColor > 0.80 && h > 0.52) {
+						const tSpot = (nAccentColor - 0.80) / 0.20;
+						r = lerp(r, palette.brightOrange[0], tSpot);
+						g = lerp(g, palette.brightOrange[1], tSpot);
+						b = lerp(b, palette.brightOrange[2], tSpot);
+					}
+
+					// Map channel compilation assignment
+					const aoFactor = ao / 255.0;
+					maps.albedo.data[pixelIdx]     = r * aoFactor;
+					maps.albedo.data[pixelIdx + 1] = g * aoFactor;
+					maps.albedo.data[pixelIdx + 2] = b * aoFactor;
+					maps.albedo.data[pixelIdx + 3] = 255;
+
+					// Roughness configuration clamped to 0.15 - 0.35 limits
+					const rValue = lerp(0.15, 0.35, 1.0 - (h * 0.75 + (ao / 255.0) * 0.25));
+					const rByte = Math.floor(rValue * 255);
+					maps.roughness.data[pixelIdx]     = rByte;
+					maps.roughness.data[pixelIdx + 1] = rByte;
+					maps.roughness.data[pixelIdx + 2] = rByte;
+					maps.roughness.data[pixelIdx + 3] = 255;
+
+					const hByte = Math.floor(h * 255);
+					maps.height.data[pixelIdx]     = hByte;
+					maps.height.data[pixelIdx + 1] = hByte;
+					maps.height.data[pixelIdx + 2] = hByte;
+					maps.height.data[pixelIdx + 3] = 255;
+
+					maps.ao.data[pixelIdx]     = ao;
+					maps.ao.data[pixelIdx + 1] = ao;
+					maps.ao.data[pixelIdx + 2] = ao;
+					maps.ao.data[pixelIdx + 3] = 255;
+
+					maps.metallic.data[pixelIdx]     = 0;
+					maps.metallic.data[pixelIdx + 1] = 0;
+					maps.metallic.data[pixelIdx + 2] = 0;
+					maps.metallic.data[pixelIdx + 3] = 255;
+				}
+			}
+
+			updateStatus("Filtering Tangent Normal Map layers...");
+			
+			const strength = 16.0;
+			for (let y = 0; y < size; y++) {
+				for (let x = 0; x < size; x++) {
+					const xLeft  = (x - 1 + size) % size;
+					const xRight = (x + 1) % size;
+					const yUp    = (y - 1 + size) % size;
+					const yDown  = (y + 1) % size;
+
+					const hL  = heightBuffer[y * size + xLeft];
+					const hR  = heightBuffer[y * size + xRight];
+					const hU  = heightBuffer[yUp * size + x];
+					const hD  = heightBuffer[yDown * size + x];
+
+					const nX = (hL - hR) * strength;
+					const nY = (hU - hD) * strength;
+					const nZ = 1.0;
+
+					const len = Math.sqrt(nX * nX + nY * nY + nZ * nZ);
+					const pixelIdx = (y * size + x) * 4;
+					
+					maps.normal.data[pixelIdx]     = Math.floor((nX / len * 0.5 + 0.5) * 255);
+					maps.normal.data[pixelIdx + 1] = Math.floor((nY / len * 0.5 + 0.5) * 255);
+					maps.normal.data[pixelIdx + 2] = Math.floor((nZ / len * 0.5 + 0.5) * 255);
+					maps.normal.data[pixelIdx + 3] = 255;
+				}
+			}
+
+			// Restore navigation interface triggers
+			const switcherButtons = document.querySelectorAll('.map-view-btn');
+			switcherButtons.forEach(btn => btn.disabled = false);
+			document.getElementById('btn-download').disabled = false;
+			document.getElementById('btn-generate').disabled = false;
+			
+			switchView(currentView);
+			updateStatus(`Generated successfully! Seed: "${seedStr}"`);
+
+		}, 50);
+	}
+
+	function switchView(mapType) {
+		currentView = mapType;
+		if (!maps[mapType]) return;
+		ctx.putImageData(maps[mapType], 0, 0);
+		
+		const switcherButtons = document.querySelectorAll('.map-view-btn');
+		switcherButtons.forEach(btn => btn.classList.remove('active'));
+		document.getElementById(`map-${mapType}`).classList.add('active');
+	}
+
+	function downloadCurrentMap() {
+		if (!maps[currentView]) return;
+		const seedStr = document.getElementById("seedInput").value;
+		updateStatus(`Packaging ${currentView.toUpperCase()} download layer...`);
+		
+		const link = document.createElement('a');
+		link.download = `frog_${seedStr}_${currentView}_4k.png`;
+		link.href = canvas.toDataURL('image/png');
+		link.click();
+		
+		updateStatus("Download completely generated.");
+	}
+
+	function lerp(start, end, amt) {
+		return (1 - amt) * start + amt * end;
+	}
+</script>
+</body>
+</html>
